@@ -45,12 +45,7 @@ void Client::ClientProcess()
             isConnectionOpen = false;
             break;
         }
-
-        //read the incoming data from the connected socket
-        /*if (recvfrom(socket.GetSocket(), receiveBuf, sizeof(receiveBuf), 0, NULL, NULL))
-        {
-            printf("Got Reply from server: %s\n", receiveBuf);
-        }*/
+        
         Address sender;
         
         if (socket.Receive(sender, receiveBuf, sizeof(receiveBuf)) > 0)

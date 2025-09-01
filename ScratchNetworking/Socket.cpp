@@ -70,60 +70,6 @@ bool Socket::OpenSock(unsigned short port, bool bindSock)
     return true;
 }
 
-/*bool Socket::OpenUDPClientSock(unsigned short port, char* ipAddress, sockaddr_in*& servAddr)
-{
-    /*socket creation#1#
-    handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    
-    if (handle <= 0)
-    {
-        std::cout << "Socket creation failed." << std::endl;
-        return false;
-    }
-
-    Address address = Address(port);
-     
-    
-
-    //set memory for it to zero
-    /*servAddr = (sockaddr_in*) malloc(sizeof(sockaddr_in));
-    memset((char*) &servAddr, 0, sizeof(servAddr));#1#
-
-    servAddr = new sockaddr_in();
-    
-    /*filling the address structure#1#
-    servAddr->sin_family = AF_INET;
-    servAddr->sin_port = htons(address.getPort()); 
-    servAddr->sin_addr.s_addr = htonl(address.getAddress());
-
-    //inet_pton(AF_INET, ipAddress, &servAddr->sin_addr.s_addr);
-
-    /*
-    /*binding the address to the socket we created making the socket's destination implicite in future calls#2#
-    if (bind(handle, (const sockaddr*)&servAddr, sizeof(&servAddr)) == SOCKET_ERROR)
-    {
-        std::cout << "Socket bind failed." << std::endl;
-        return false;
-    }
-
-    /*set socket to non block as by default its turned which means that recvfrom function will not return until a packet is available to read
-     * which ofc is not suitable when we need to simulate 60 frames per second therefore it would be to slow
-     #2#
-#if PLATFORM == PLATFORM_WINDOWS
-    DWORD nonBlocking = 1;
-
-    if (ioctlsocket(handle, FIONBIO, &nonBlocking) != 0)
-    {
-        std::cout << "ioctlsocket failed. failed to set socket to non-blocking" << std::endl;
-        return false;
-    }
-#endif
-#1#
-
-    
-    return true;
-}*/
-
 void Socket::Close()
 {
     /*clos the socket*/
@@ -153,8 +99,6 @@ bool Socket::Send(const Address& destination, const void* data, int size)
     {
         int error = WSAGetLastError();
         printf("failed to send data to socket, error: %d\n", error);
-
-        
         
         return false;
     }
@@ -174,15 +118,9 @@ int Socket::Receive(Address& sender, void* data, int size)
     sockaddr_in from;
     socklen_t from_len = sizeof(from);
 
+    //recieve data from sendto function
     int bytes = recvfrom(handle, (char*) data, size, 0, (sockaddr*)&from, &from_len);
-
-    /*if (bytes != size)
-    {
-        int error = WSAGetLastError();
-        printf("failed to send data to socket, error: %d\n", error);
-        
-        return false;
-    }*/
+    
 
     if (bytes == SOCKET_ERROR) return 0;
 
