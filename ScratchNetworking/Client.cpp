@@ -12,9 +12,9 @@ void Client::ClientProcess()
     bool isConnectionOpen;
 
     //separate buffers to prevent mix ups and ensure there is a clear difference between what gets sent and what is retrieved from server
-    char transmitBuf[100];
-    char receiveBuf[100];
-
+    char transmitBuf[1024];
+    char receiveBuf[1024];
+    
     strcpy_s(transmitBuf, "");
     strcpy_s(receiveBuf, "");
 
@@ -35,7 +35,13 @@ void Client::ClientProcess()
                 break;
             }*/
 
-            socket.Send(Address(127,0,0,1, 30000), transmitBuf, sizeof(transmitBuf));
+            int bytesSent = socket.Send(Address(127,0,0,1, 30000), transmitBuf, sizeof(transmitBuf));
+
+            if(bytesSent <= 0)
+            {
+                int error = WSAGetLastError();
+                printf("didnt send anything cause of this error: %d", error);
+            }
             
         }
 
@@ -47,14 +53,12 @@ void Client::ClientProcess()
         }
         
         Address sender;
+
+        int echoRecieved = socket.Receive(sender, receiveBuf, sizeof(receiveBuf));
         
-        if (socket.Receive(sender, receiveBuf, sizeof(receiveBuf)) > 0)
+        if (echoRecieved > 0)
         {
             printf("Got Reply from server: %s\n", receiveBuf);
-        }
-        else
-        {
-            isConnectionOpen = false;
         }
         
     }

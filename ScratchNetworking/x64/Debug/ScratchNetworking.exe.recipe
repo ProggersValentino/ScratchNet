@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\ApplicationProjects\ScratchNetworking\x64\Debug\ScratchNetworking.exe</FullPath>
+      <FullPath>C:\unity\ScratchNet\x64\Debug\ScratchNetworking.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

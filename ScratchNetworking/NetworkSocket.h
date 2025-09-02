@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <winsock2.h>
-#pragma comment (lib, "Ws2_32.lib") /*creating a link to the winsock library to get socket functionality by telling the linker*/
+#pragma comment (lib, "ws2_32.lib") /*creating a link to the winsock library to get socket functionality by telling the linker*/
 
 #include "NetworkSocket.h"
 

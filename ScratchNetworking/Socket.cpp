@@ -32,8 +32,8 @@ bool Socket::OpenSock(unsigned short port, bool bindSock)
     sockaddr_in* inetAddr;
 
     //allocate memory for the address structure and set it to zero
-    Addr = (sockaddr*) malloc(sizeof(sockaddr));
-    memset((char*) Addr, 0, sizeof(sockaddr));
+    Addr = (sockaddr*) malloc(sizeof(sockaddr_in));
+    memset((char*) Addr, 0, sizeof(sockaddr_in));
     
     /*filling the address structure*/
     Addr->sa_family = AF_INET;
@@ -42,20 +42,10 @@ bool Socket::OpenSock(unsigned short port, bool bindSock)
     inetAddr->sin_addr.s_addr = htonl(INADDR_ANY); /*loopback ip address*/
     inetAddr->sin_port = htons((unsigned short)port);
 
-    /*binding the address to the socket we created making the socket's destination implicite in future calls*/
-    if (bindSock && bind(handle, (sockaddr*)&inetAddr, sizeof(&inetAddr)) != SOCKET_ERROR)
-    {
-        std::cout << "Socket bind failed." << std::endl;
-        std::cout << "Error: " << WSAGetLastError() << std::endl;
-        return false;
-    }
-
-    if (!bindSock) return true; //early exit as we dont need to make not blocking
-    
     /*
-    set socket to non block as by default its turned which means that recvfrom function will not return until a packet is available to read
-     * which ofc is not suitable when we need to simulate 60 frames per second therefore it would be to slow
-     /*#1#*/
+     set socket to non block as by default its turned which means that recvfrom function will not return until a packet is available to read
+      * which ofc is not suitable when we need to simulate 60 frames per second therefore it would be to slow
+      /*#1#*/
 #if PLATFORM == PLATFORM_WINDOWS
     DWORD nonBlocking = 1;
 
@@ -66,6 +56,20 @@ bool Socket::OpenSock(unsigned short port, bool bindSock)
     }
 #endif
 
+    
+    if (!bindSock) return true; //early exit as we dont need to make not blocking
+    
+    /*binding the address to the socket we created making the socket's destination implicite in future calls*/
+    if (bindSock && bind(handle, (sockaddr*)&inetAddr, sizeof(&inetAddr)) != SOCKET_ERROR)
+    {
+        std::cout << "Socket bind failed." << std::endl;
+        std::cout << "Error: " << WSAGetLastError() << std::endl;
+        return false;
+    }
+    else
+    {
+        printf("socket bound");
+    }
     
     return true;
 }
@@ -120,17 +124,25 @@ int Socket::Receive(Address& sender, void* data, int size)
 
     //recieve data from sendto function
     int bytes = recvfrom(handle, (char*) data, size, 0, (sockaddr*)&from, &from_len);
-    
+    int error = WSAGetLastError();
 
-    if (bytes == SOCKET_ERROR) return 0;
+    if (bytes == SOCKET_ERROR && error != 10054 && error != 10035) //we ignore 10054 as its normal in UDP connections as well as 10035 as we have set it as nonblocking and are waiting for data
+    {
+        
+        if(error != 10022 && error != 10054) printf("Failed to recieve message under this error: %d", error); 
+        return 0;
+    }
 
-    unsigned int from_address = 
-            ntohl( from.sin_addr.s_addr );
+    if(bytes > 0)
+    {
+        unsigned int from_address = 
+                ntohl( from.sin_addr.s_addr );
 
-    unsigned int from_port = 
-        ntohs( from.sin_port );
+        unsigned int from_port = 
+            ntohs( from.sin_port );
 
-    printf("we got message from port: %d and address: %d", from_port, from_address);
+        printf("we got message from port: %d and address: %d", from_port, from_address);
+    }
     
     return bytes;
 }

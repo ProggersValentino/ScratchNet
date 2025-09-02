@@ -4,7 +4,14 @@
 
 void Server::init_server(unsigned short portNum)
 {
-    socket.OpenSock(portNum, true);
+    if(socket.OpenSock(portNum, true))
+    {
+        printf("we have our server socket");
+    }
+    else
+    {
+        printf("womp womp");
+    }
 }
 
 void Server::ServerProcess()
@@ -25,15 +32,17 @@ void Server::ServerProcess()
     while (true)
     {
         Address sender;
-
+        
+        int recievedBytes = socket.Receive(sender, buf, sizeof(buf));
+        
         //read the incoming data from the connected socket
-        if (socket.Receive(sender, buf, sizeof(buf)) > 0)
+        if (recievedBytes > 0)
         {
             //read incoming data
             //make sure the string ends after that by setting  the next byte to null
             //byte to null
             buf[0] = toupper(buf[0]);
-            buf[1] = '\0';
+            buf[recievedBytes] = '\0';
 
             
             printf("Got message from client: %s", buf);

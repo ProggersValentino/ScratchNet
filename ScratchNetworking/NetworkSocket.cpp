@@ -12,10 +12,12 @@ bool NetworkSocket::InitializeSockets()
     int NumProtocols;
     
     versionRequested = MAKEWORD(2, 2); 
-    int error = WSAStartup(MAKEWORD(2,2), &wsaData) == NO_ERROR; /*return result of whether an error has occured or not */
+    bool error = WSAStartup(versionRequested, &wsaData) != NO_ERROR; /*return result of whether an error has occured or not */
 
     if (error)
     {
+        int socketError = WSAGetLastError();
+        printf("could not start socket: %d", socketError);
         return false;
     }
     else
@@ -28,44 +30,44 @@ bool NetworkSocket::InitializeSockets()
         }
     }
 
-    //call WSAEnumProtocols to figure out how big of a buffer we need, the first time is to check if the buffer size is too small 
-    NumProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
+    // //call WSAEnumProtocols to figure out how big of a buffer we need, the first time is to check if the buffer size is too small 
+    // NumProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
+    //
+    // if ((NumProtocols != SOCKET_ERROR) && (WSAGetLastError() != WSAENOBUFS))
+    // {
+    //     WSACleanup();
+    //     return false;
+    // }
+    //
+    // //Allocate a buffer; call WESAEnumProtocols to get an array of WSAPROTOCOL_INFO structs
+    // SelectedProtocol = (LPWSAPROTOCOL_INFO)malloc(sizeof(WSAPROTOCOL_INFO));
+    //
+    // if (SelectedProtocol == NULL)
+    // {
+    //     WSACleanup();
+    //     return false;
+    // }
+    //
+    // //allocate memory for protocol list and define what protocols to look for
+    // int* protos = (int*)calloc(2, sizeof(int));
+    //
+    // protos[0] = IPPROTO_TCP;
+    // protos[1] = IPPROTO_UDP;
+    //
+    // NumProtocols = WSAEnumProtocols(protos, SelectedProtocol, &bufferSize);
+    //
+    // //to prevent memory leaks we free the data from its memory allocation
+    // free(protos); 
+    // protos = NULL;
+    //
+    // free(SelectedProtocol);
+    // SelectedProtocol = NULL;
 
-    if ((NumProtocols != SOCKET_ERROR) && (WSAGetLastError() != WSAENOBUFS))
-    {
-        WSACleanup();
-        return false;
-    }
-
-    //Allocate a buffer; call WESAEnumProtocols to get an array of WSAPROTOCOL_INFO structs
-    SelectedProtocol = (LPWSAPROTOCOL_INFO)malloc(sizeof(WSAPROTOCOL_INFO));
-
-    if (SelectedProtocol == NULL)
-    {
-        WSACleanup();
-        return false;
-    }
-
-    //allocate memory for protocol list and define what protocols to look for
-    int* protos = (int*)calloc(2, sizeof(int));
-
-    protos[0] = IPPROTO_TCP;
-    protos[1] = IPPROTO_UDP;
-
-    NumProtocols = WSAEnumProtocols(protos, SelectedProtocol, &bufferSize);
-
-    //to prevent memory leaks we free the data from its memory allocation
-    free(protos); 
-    protos = NULL;
-
-    free(SelectedProtocol);
-    SelectedProtocol = NULL;
-
-    if (NumProtocols == SOCKET_ERROR)
-    {
-        WSACleanup();
-        return false;
-    }
+    // if (NumProtocols == SOCKET_ERROR)
+    // {
+    //     WSACleanup();
+    //     return false;
+    // }
 
     return true;
 #else
